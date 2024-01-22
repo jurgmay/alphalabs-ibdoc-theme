@@ -28,24 +28,24 @@ four51.app.controller('CheckOutViewCtrl', [
 		$scope.hasOrderConfig = OrderConfig.hasConfig($scope.currentOrder, $scope.user);
 		$scope.checkOutSection = $scope.hasOrderConfig ? 'order' : 'shipping';
 
-		// Check that the Purchase Order custom order field exists
-		if (typeof $scope.currentOrder.OrderFields[0] !== 'undefined') {
-			// Make sure that the cost centers include entries for 'Cost Centre' and 'Purchase Order'
-			if (
-				$scope.user.CostCenters.some((costCentre) => costCentre.Description === 'Cost Centre') &&
-				$scope.user.CostCenters.some((costCentre) => costCentre.Description === 'Purchase Order')
-			) {
-				//---
-				if ($scope.user.CostCenters[0].Description === 'Cost Centre') {
-					$scope.currentOrder.CostCenter = $scope.user.CostCenters[0].Name;
-					$scope.currentOrder.OrderFields[0].Value = $scope.user.CostCenters[1].Name;
-				} else {
-					$scope.currentOrder.CostCenter = $scope.user.CostCenters[1].Name;
-					$scope.currentOrder.OrderFields[0].Value = $scope.user.CostCenters[0].Name;
-				}
-			}
-			// No Purchase Order field, no Cost
-		}
+		// // Check that the Purchase Order custom order field exists
+		// if (typeof $scope.currentOrder.OrderFields[0] !== 'undefined') {
+		// 	// Make sure that the cost centers include entries for 'Cost Centre' and 'Purchase Order'
+		// 	if (
+		// 		$scope.user.CostCenters.some((costCentre) => costCentre.Description === 'Cost Centre') &&
+		// 		$scope.user.CostCenters.some((costCentre) => costCentre.Description === 'Purchase Order')
+		// 	) {
+		// 		//---
+		// 		if ($scope.user.CostCenters[0].Description === 'Cost Centre') {
+		// 			$scope.currentOrder.CostCenter = $scope.user.CostCenters[0].Name;
+		// 			$scope.currentOrder.OrderFields[0].Value = $scope.user.CostCenters[1].Name;
+		// 		} else {
+		// 			$scope.currentOrder.CostCenter = $scope.user.CostCenters[1].Name;
+		// 			$scope.currentOrder.OrderFields[0].Value = $scope.user.CostCenters[0].Name;
+		// 		}
+		// 	}
+		// 	// No Purchase Order field, no Cost
+		// }
 
 		function submitOrder() {
 			$scope.displayLoadingIndicator = true;

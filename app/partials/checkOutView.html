@@ -1,17 +1,18 @@
 <!-- *** checkOutView *** -->
- 
+
 <!-- main-container start -->
 <!-- ==================== -->
 <section uk-height-viewport="expand: true" class="uk-section uk-background-muted">
 
-    <div class="uk-container" ng-show="currentOrder.CostCenter.length === 0 || currentOrder.OrderFields.length === 0 || currentOrder.CostCenter.Value === '' || currentOrder.OrderFields[0].Value === ''">
+	<!-- <div class="uk-container" ng-show="currentOrder.CostCenter.length === 0 || currentOrder.OrderFields.length === 0 || currentOrder.CostCenter.Value === '' || currentOrder.OrderFields[0].Value === ''">
         <div class="uk-width-1-1">
             <p class="uk-h3 uk-text-danger">Configuration error</p>
             <span class="uk-h4 uk-text-danger">- Check the cost centre and purchase order permissions</span>
         </div>
-    </div>
+    </div> -->
 
-	<div class="uk-container" ng-hide="currentOrder.CostCenter.length === 0 || currentOrder.OrderFields.length === 0 || currentOrder.CostCenter.Value === '' || currentOrder.OrderFields[0].Value === ''">
+	<div class="uk-container"
+		ng-hide="currentOrder.CostCenter.length === 0 || currentOrder.OrderFields.length === 0 || currentOrder.CostCenter.Value === '' || currentOrder.OrderFields[0].Value === ''">
 
 		<!-- page-title start -->
 		<!-- ================ -->
@@ -24,7 +25,8 @@
 		<div class="uk-card uk-card-small uk-card-default">
 			<div class="uk-card-body">
 
-				<loadingindicator ng-show="displayLoadingIndicator" title="{{'Please wait while we update your order' | r | xlat}}" />
+				<loadingindicator ng-show="displayLoadingIndicator"
+					title="{{'Please wait while we update your order' | r | xlat}}" />
 
 				<!--
 				<div ng-hide="shipaddressform || (shipaddresses.length == 0 && user.Permissions.contains('CreateShipToAddress'))">
@@ -51,12 +53,13 @@
 					</div>
 				</div>
 				-->
-				
+
 				<div ng-show="currentOrder && currentOrder.isEditable" ng-click="showSuccessAlert = false">
 
 					<div uk-grid class="uk-flex-center">
 						<!-- Hide if the New Address block is being displayed. -->
-						<div class="uk-width-1-2" ng-hide="shipaddressform || (shipaddresses.length == 0 && user.Permissions.contains('CreateShipToAddress'))">
+						<div class="uk-width-1-2"
+							ng-hide="shipaddressform || (shipaddresses.length == 0 && user.Permissions.contains('CreateShipToAddress'))">
 							<orderdetails ng-show="hasOrderConfig" />
 						</div>
 
@@ -68,7 +71,8 @@
 					</div>
 
 					<!-- Hide if the New Address block is being displayed -->
-					<div ng-hide="shipaddressform || (shipaddresses.length == 0 && user.Permissions.contains('CreateShipToAddress'))">
+					<div
+						ng-hide="shipaddressform || (shipaddresses.length == 0 && user.Permissions.contains('CreateShipToAddress'))">
 						<div class="view-response-message alert-success text-center" alert-show="actionMessage">
 							<p>{{actionMessage | r | xlat}}</p>
 						</div>
