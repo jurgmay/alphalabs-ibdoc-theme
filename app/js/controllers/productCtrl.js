@@ -17,10 +17,18 @@ four51.app.controller('ProductCtrl', [
 			});
 		}
 
+		console.log('ProductCtrl.js');
+		console.log($scope);
+
+		$scope.currentOrder = {};
+		$scope.currentOrder.LineItems = [];
+
+		$scope.orderShipAddress = '';
+		$scope.shipAddress = '';
 		$scope.selected = 1;
 		$scope.LineItem = {};
 		$scope.addToOrderText = 'Add To Order';
-		$scope.loadingIndicator = true;
+		$scope.loadingIndicator = false;
 		$scope.loadingImage = true;
 		$scope.searchTerm = null;
 		$scope.settings = {
@@ -35,16 +43,11 @@ four51.app.controller('ProductCtrl', [
 			});
 		};
 		function setDefaultQty(lineitem) {
-			if (lineitem.PriceSchedule && lineitem.PriceSchedule.DefaultQuantity != 0) $scope.LineItem.Quantity = lineitem.PriceSchedule.DefaultQuantity;
+			if (lineitem.PriceSchedule && lineitem.PriceSchedule.DefaultQuantity !== 0) $scope.LineItem.Quantity = lineitem.PriceSchedule.DefaultQuantity;
 		}
 
-		/*social*/
-		$scope.encodeComponent = function (value) {
-			return encodeURIComponent(value);
-		};
-		/*social*/
-
 		function init(searchTerm, callback) {
+			console.log('init', searchTerm);
 			ProductDisplayService.getProductAndVariant(
 				$routeParams.productInteropID,
 				$routeParams.variantInteropID,
@@ -53,56 +56,6 @@ four51.app.controller('ProductCtrl', [
 					$scope.LineItem.Variant = data.variant;
 					ProductDisplayService.setNewLineItemScope($scope);
 					ProductDisplayService.setProductViewScope($scope);
-
-					/*social*/
-					$scope.LineItem.ShareName = $scope.LineItem.Product.Name.replace(/&/g, 'and');
-					$scope.tumblr_link_url = $location.absUrl();
-					$scope.tumblr_link_name = $scope.LineItem.ShareName;
-					$scope.tumblr_link_description = 'Check out the ' + $scope.tumblr_link_name + ' on the COBC Site!';
-					$scope.twitter_link_description = 'Check out the ' + $scope.tumblr_link_name + ' on the COBC Site!';
-
-					if ($scope.LineItem.Product.UnitOfMeasure === '') {
-						$scope.unitofmeasure_text = '';
-					} else {
-						var quantityAvailable = $scope.LineItem.Product.QuantityAvailable;
-						var unitOfMeasureText = $scope.LineItem.Product.UnitOfMeasure;
-						var quantityMultiplier = $scope.LineItem.PriceSchedule.QuantityMultiplier;
-						var unitOfMeasure = parseInt(unitOfMeasureText.replace(/[^0-9]/g, ''), 10);
-						var batches = quantityAvailable / quantityMultiplier;
-
-						if (quantityMultiplier / unitOfMeasure > 1) {
-							$scope.unitofmeasure_text = '(' + batches + ' x ' + quantityMultiplier / unitOfMeasure + ' ' + unitOfMeasureText + ')';
-						} else {
-							$scope.unitofmeasure_text = batches + ' ' + unitOfMeasureText;
-						}
-					}
-
-					if ($scope.LineItem.Product.UnitOfMeasure === '') {
-						$scope.quantity_text = '';
-					} else {
-						$scope.quantity_text = 'Supplied in ' + $scope.LineItem.Product.UnitOfMeasure;
-					}
-
-					$scope.shareFB = function (post) {
-						FB.ui({
-							method: 'share',
-							picture: $scope.LineItem.Variant.PreviewUrl,
-							href: $scope.LineItem.Variant.PreviewUrl,
-						});
-					};
-
-					$scope.feedFB = function (post) {
-						FB.ui({
-							method: 'feed',
-							name: $scope.LineItem.ShareName,
-							link: 'https://accent.four51ordercloud.com/cobc/product/' + $scope.LineItem.Product.InteropID,
-							picture: $scope.LineItem.Variant.PreviewUrl,
-							caption: '',
-							description: '',
-							message: '',
-						});
-					};
-					/*social*/
 
 					setDefaultQty($scope.LineItem);
 					$scope.$broadcast('ProductGetComplete');
@@ -121,11 +74,13 @@ four51.app.controller('ProductCtrl', [
 		});
 
 		$scope.searchVariants = function (searchTerm) {
+			console.log('$scope.searchVariants');
 			$scope.searchTerm = searchTerm;
 			$scope.settings.currentPage == 1 ? init(searchTerm) : ($scope.settings.currentPage = 1);
 		};
 
 		$scope.deleteVariant = function (v, redirect) {
+			console.log('$scope.deleteVariant');
 			if (!v.IsMpowerVariant) return;
 			// doing this because at times the variant is a large amount of data and not necessary to send all that.
 			var d = {
@@ -145,6 +100,7 @@ four51.app.controller('ProductCtrl', [
 		};
 
 		$scope.addToOrder = function () {
+			console.log('addToOrder');
 			if ($scope.lineItemErrors && $scope.lineItemErrors.length) {
 				$scope.showAddToCartErrors = true;
 				return;
@@ -154,6 +110,24 @@ four51.app.controller('ProductCtrl', [
 				$scope.currentOrder.LineItems = [];
 			}
 			if (!$scope.currentOrder.LineItems) $scope.currentOrder.LineItems = [];
+
+			if ($scope.currentOrder.LineItems) {
+				console.log('Deleting order', $scope.currentOrder);
+
+				Order.delete(
+					$scope.currentOrder,
+					function () {
+						$scope.currentOrder = {};
+						$scope.currentOrder.LineItems = [];
+					},
+					function (ex) {
+						console.log('Error: ', ex);
+					}
+				);
+
+				console.log('Deleted order');
+			}
+
 			if ($scope.allowAddFromVariantList) {
 				angular.forEach($scope.variantLineItems, function (item) {
 					if (item.Quantity > 0) {
@@ -162,19 +136,21 @@ four51.app.controller('ProductCtrl', [
 					}
 				});
 			} else {
-				$scope.currentOrder.LineItems.push($scope.LineItem);
-				$scope.currentOrder.Type = $scope.LineItem.PriceSchedule.OrderType;
+				if ($scope.currentOrder.LineItems.length === 0) {
+					$scope.currentOrder.LineItems.push($scope.LineItem);
+					$scope.currentOrder.Type = $scope.LineItem.PriceSchedule.OrderType;
+				}
 			}
-			$scope.addToOrderIndicator = true;
-			//$scope.currentOrder.Type = (!$scope.LineItem.Product.IsVariantLevelInventory && $scope.variantLineItems) ? $scope.variantLineItems[$scope.LineItem.Product.Variants[0].InteropID].PriceSchedule.OrderType : $scope.LineItem.PriceSchedule.OrderType;
-			// shipper rates are not recalcuated when a line item is added. clearing out the shipper to force new selection, like 1.0
-			Order.clearshipping($scope.currentOrder).save(
+
+			$scope.addToOrderIndicator = false;
+
+			Order.save(
 				$scope.currentOrder,
 				function (o) {
 					$scope.user.CurrentOrderID = o.ID;
 					User.save($scope.user, function () {
-						$scope.addToOrderIndicator = true;
-						$location.path('/cart' + ($scope.isEditforApproval ? '/' + o.ID : ''));
+						$scope.addToOrderIndicator = false;
+						$location.path('checkout');
 					});
 				},
 				function (ex) {
@@ -187,7 +163,8 @@ four51.app.controller('ProductCtrl', [
 		};
 
 		$scope.setOrderType = function (type) {
-			$scope.loadingIndicator = true;
+			console.log('$scope.setOrderType');
+			$scope.loadingIndicator = false;
 			$scope.currentOrder = { Type: type };
 			init(null, function () {
 				$scope.loadingIndicator = false;
@@ -195,15 +172,14 @@ four51.app.controller('ProductCtrl', [
 		};
 
 		$scope.showErrorModal = function () {
-			// UIkit.modal.dialog('<p>UIkit dialog!</p>');
-
-			// your logic goes here
 			return true;
 		};
 
 		$scope.$on('event:imageLoaded', function (event, result) {
+			console.log('event:imageLoaded');
 			$scope.loadingImage = false;
 			$scope.$apply();
+			$scope.addToOrder();
 		});
 	},
 ]);

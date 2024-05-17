@@ -20,12 +20,9 @@ function largeshipaddresssearch() {
 		return [
 			'<form class="uk-form uk-form-width-1-1">',
 			'<div class="uk-inline uk-width-1-1">',
-			'<span class="uk-light uk-form-icon uk-form-icon-flip" uk-icon="icon: chevron-down"></span>',
-			'<button id="address_search_button" class="uk-button uk-button-primary uk-width-1-1" type="button">Search for your delivery address</button>',
-			'<div uk-dropdown="mode: click" class="uk-width-1-1 uk-margin-remove uk-padding-remove">',
-			'<div class="uk-padding-remove uk-margin-remove">',
-			'<input class="uk-input uk-form-width-1-1" type="text" placeholder="Start typing to find your address" ng-readonly="readonlyshipping" ng-model="ShipAddress" required ng-change="searchShipAddresses(ShipAddress)" typeahead-min-length="3" typeahead="address as address.AddressName for address in shipaddresses | filter:$viewValue | limitTo:50" autocomplete="off" autofocus />',
-			'</div>',
+			'<div>',
+			'<input class="uk-input uk-form-width-medium" type="text" id="patient-id" ng-model="shipAddressSearchText" ng-change="resetForm()" placeholder="Patient ID" value="" required autocomplete="off" autofocus />',
+			'<button class="uk-button uk-button-primary" ng-click="searchForPatientAddress(shipAddressSearchText)" ng-model="shipAddressSearchText">Search</button>',
 			'</div>',
 			'</div>',
 			'</form>',
@@ -33,30 +30,37 @@ function largeshipaddresssearch() {
 	}
 }
 
-LargeShipAddressSearchCtrl.$inject = ['$scope', 'AddressList', 'LargeAddressList', 'Address'];
-function LargeShipAddressSearchCtrl($scope, AddressList, LargeAddressList, Address) {
+LargeShipAddressSearchCtrl.$inject = ['$scope', '$rootScope', 'AddressList', 'LargeAddressList', 'Address', 'Order'];
+function LargeShipAddressSearchCtrl($scope, $rootScope, AddressList, LargeAddressList, Address, Order) {
 	AddressList.shipping(function (list) {
-		$scope.shipaddresses = list;
+		$scope.shipAddressesArray = list;
 		$scope.readonlyshipping = false;
-		if ($scope.shipaddresses.length == 1) {
+		if ($scope.shipAddressesArray.length == 1) {
 			$scope.ShipAddressID = list[0].ID;
 			$scope.ShipAddress = list[0];
+			$scope.shipAddress = list[0];
+			$scope.orderShipAddress = list[0];
 			$scope.readonlyshipping = true;
 		} else {
-			$scope.shipaddresses = [' '];
+			$scope.shipAddressesArray = [' '];
 		}
 	});
-
+	console.log('LargeShipAddressSearchCtrl');
+	$scope.shipAddressSearchText = '';
+	$scope.orderShipAddress = '';
 	$scope.shipAddressCount = null;
-	$scope.showTip = true;
+	$scope.showNewAddress = false;
+	$scope.showAddressButtons = false;
+	$scope.showOrderConfirmationButtons = false;
 	$scope.showResult = false;
 	$scope.shipaddressform = false;
+	$scope.editingAddress = false;
 
 	$scope.$watch('ShipAddress', function (newValue) {
 		if (!newValue || !newValue.ID) {
 			$scope.orderShipAddress = {};
 			$scope.currentOrder.ShipAddressID = null;
-			$scope.showTip = true;
+			$scope.showNewAddress = false;
 			$scope.showResult = false;
 		} else {
 			$scope.orderShipAddress = newValue;
@@ -88,28 +92,120 @@ function LargeShipAddressSearchCtrl($scope, AddressList, LargeAddressList, Addre
 		});
 	});
 
+	$scope.resetForm = function () {
+		console.log('resetForm()');
+		$scope.shipAddressObject = null;
+		$scope.shipAddressesArray = [];
+		$scope.orderShipAddress = '';
+		$scope.showAddressButtons = false;
+		$scope.showNewAddress = false;
+		$scope.shipAddressCount = null;
+		$scope.editingAddress = false;
+	};
+
+	$scope.searchForPatientAddress = function (searchTerm) {
+		console.log('searchForPatientAddress()', searchTerm);
+		$scope.editingAddress = false;
+		$scope.showNewAddress = false;
+		$scope.showAddressButtons = false;
+		$scope.showOrderConfirmationButtons = false;
+		$scope.shipAddressesArray = [' ']; //this sets shipAddressesArray to something while we wait for the search so we don't have to modify existing ng-show/hide(s) for address form / ship method
+		LargeAddressList.queryShipping(searchTerm, function (list, count) {
+			if (count > 0) {
+				console.log('count > 0');
+				$scope.shipAddressCount = 0;
+				for (let i = 0; i < count; i++) {
+					if (list[i].AddressName === searchTerm) {
+						$scope.shipAddressesArray = list;
+						$scope.shipAddressCount = 1;
+					}
+				}
+			}
+
+			if ($scope.shipAddressCount === null || $scope.shipAddressCount === 0) {
+				$scope.orderShipAddress = {};
+				$scope.currentOrder.ShipAddressID = null;
+				$scope.shipAddressObject = {
+					PatientID: searchTerm,
+					CompanyName: '',
+					Country: 'GB',
+					IsBilling: false,
+					IsShipping: true,
+					IsCustEditable: true,
+				};
+				$scope.showNewAddress = true;
+				$scope.showResult = false;
+				$scope.showOrderConfirmationButtons = false;
+
+				UIkit.modal(document.getElementById('address-modal')).show();
+			} else {
+				$scope.orderShipAddress = searchTerm;
+				$scope.currentOrder.ShipAddress = searchTerm;
+				$scope.shipAddressObject = $scope.shipAddressesArray[0];
+				$scope.shipAddressObject.PatientID = searchTerm;
+				$scope.shipAddressObject.IsEditing = false;
+				if ($scope.currentOrder) {
+					$scope.currentOrder.ShipAddressID = $scope.shipAddressesArray[0].ID;
+					$scope.currentOrder.ShipFirstName = null;
+					$scope.currentOrder.ShipLastName = null;
+					angular.forEach($scope.currentOrder.LineItems, function (item) {
+						item.ShipFirstName = null;
+						item.ShipLastName = null;
+					});
+				}
+				if (searchTerm) {
+					if ($scope.user.Permissions.contains('EditShipToName') && !$scope.orderShipAddress.IsCustEditable) {
+						angular.forEach($scope.currentOrder.LineItems, function (item) {
+							item.ShipFirstName = $scope.orderShipAddress.FirstName;
+							item.ShipLastName = $scope.orderShipAddress.LastName;
+						});
+					}
+					$scope.setShipAddressAtOrderLevel();
+					$scope.showOrderConfirmationButtons = false;
+					$scope.showAddressButtons = true;
+				}
+				$scope.showResult = true;
+			}
+		});
+
+		//account for New Address
+		$scope.$on('event:AddressSaved', function (event, address) {
+			if (address.IsShipping) {
+				$scope.ShipAddress = address;
+			}
+			$scope.showNewAddress = false;
+		});
+	};
+
 	$scope.searchShipAddresses = function (searchTerm) {
-		// $scope.shipaddresses = [' ']; //this sets shipaddresses to something while we wait for the search so we don't have to modify existing ng-show/hide(s) for address form / ship method
-		if (searchTerm && searchTerm.length > 2) {
+		$scope.showNewAddress = false;
+		$scope.shipAddressesArray = [' ']; //this sets shipAddressesArray to something while we wait for the search so we don't have to modify existing ng-show/hide(s) for address form / ship method
+		if (searchTerm) {
 			LargeAddressList.queryShipping(searchTerm, function (list, count) {
-				$scope.shipaddresses = list;
+				$scope.shipAddressesArray = list;
 				$scope.shipAddressCount = count; // we will use count to add a filter for the user
 				if (count === 0) {
-					$scope.showTip = false;
-					$scope.showResult = true;
-				} else {
-					$scope.showTip = true;
 					$scope.showResult = false;
+				} else {
+					$scope.showResult = true;
 				}
 			});
 		}
 	};
 
-	if ($scope.currentOrder.ShipAddressID) {
+	if ($scope.currentOrder !== null && $scope.currentOrder.ShipAddressID) {
 		Address.get($scope.currentOrder.ShipAddressID, function (add) {
 			$scope.ShipAddress = add;
 		});
 	}
+}
+
+function editaddress() {
+	console.log('editAddress LargeAddressListSearch');
+}
+
+function confirmaddress() {
+	console.log('confirmAddress LargeAddressListSearch');
 }
 
 function largebilladdresssearch() {

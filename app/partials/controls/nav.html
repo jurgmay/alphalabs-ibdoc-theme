@@ -10,15 +10,6 @@
 			<div class="uk-navbar-right">
 				<!-- main-menu -->
 				<ul class="uk-navbar-nav">
-					<li class="uk-animation-slide-left" ng-class="{'ng-hide': isActive('catalog')}">
-						<a href back-step class="back" uk-icon="icon: arrow-left">
-						</a>
-					</li>
-					<li ng-class="{'active': isInPath('catalog') || isInPath('product') || isInPath('cart/default') || isInPath('search')}">
-						<a id="451qa_home_link" ng-show="Four51User.isAuthenticated()" href="catalog">
-							<span class="uk-visible@m">{{'Products' | rc | xlat}}</span>
-						</a>
-					</li>
 					<li ng-if="user.Type == 'Customer'" ng-class="{'active': isActive('order'), 'active-xs': isActive('favoriteorders')}">
 						<a id="451qa_order_link" href="order">
 							<span class="uk-visible@m">{{'Orders' | r | xlat}}</span>
@@ -87,7 +78,7 @@
 							</ul>
 						</div>
 					</li>
-					<li class="viewcart">
+					<li class="viewcart" ng-hide="true">
 						<a href="cart">
 							<div class="uk-button-default uk-text-center cart-icon" ng-class="{'active': isActive(['cart', 'checkout'])}" data-toggle="" type="button">
 								<i class="fa fa-shopping-basket"></i>

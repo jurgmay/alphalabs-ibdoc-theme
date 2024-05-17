@@ -10,6 +10,9 @@ four51.app.directive('ordershipping', [
 			controller: [
 				'$scope',
 				function ($scope) {
+					console.log('Ordershipping.js');
+					console.log($scope);
+					console.log($scope.currentOrder);
 					AddressList.clear();
 					AddressList.shipping(function (list) {
 						$scope.shipaddresses = list;
@@ -168,7 +171,7 @@ four51.app.directive('ordershipping', [
 					};
 
 					$scope.setShipAddressAtOrderLevel = function () {
-						$scope.shippingFetchIndicator = true;
+						$scope.shippingFetchIndicator = false;
 						$scope.currentOrder.ShipperName = null;
 						$scope.currentOrder.Shipper = null;
 						$scope.currentOrder.ShipperID = null;
@@ -196,8 +199,8 @@ four51.app.directive('ordershipping', [
 						);
 					};
 					$scope.updateShipper = function (li) {
-						$scope.shippingUpdatingIndicator = true;
-						$scope.shippingFetchIndicator = true;
+						$scope.shippingUpdatingIndicator = false;
+						$scope.shippingFetchIndicator = false;
 						if (!li) {
 							// at the order level
 							angular.forEach($scope.shippers, function (s) {

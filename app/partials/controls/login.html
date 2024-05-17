@@ -13,15 +13,15 @@
 					<form class="uk-form-stacked" id="login_form" name="login_form">
 						<p class="alert alert-info" id="451qa_msg_login"></p>
 						<div class="uk-margin">
-							<label ng-show="credentials.Username">{{'Username' | r}}</label>
+							<label ng-show="credentials.Username" for="credentials-username">{{'Username' | r}}</label>
 							<div class="uk-form-controls">
-								<input autofocus class="uk-input" type="text" ng-model="credentials.Username" placeholder="{{'Username' | r}}" />
+								<input autofocus id="credentials-username" class="uk-input" type="text" ng-model="credentials.Username" placeholder="{{'Username' | r}}" />
 							</div>
 						</div>
 						<div class="uk-margin">
-							<label ng-show="credentials.Password">{{'Password' | r}}</label>
+							<label ng-show="credentials.Password" for="credentials-password">{{'Password' | r}}</label>
 							<div class="uk-form-controls">
-								<input class="uk-input" type="password" ng-model="credentials.Password" placeholder="{{'Password' | r}}" />
+								<input id="credentials-password" class="uk-input" type="password" ng-model="credentials.Password" placeholder="{{'Password' | r}}" />
 							</div>
 						</div>
 
@@ -38,8 +38,8 @@
 							</btn>
 							<div class="" ng-show="showEmailHelp">
 								<div>
-									<label ng-show="credentials.Email">{{'Email' | r}}</label>
-									<input class="form-control" type="email" ng-model="credentials.Email" placeholder="{{'Email' | r}}" />
+									<label ng-show="credentials.Email" for="credentials-email">{{'Email' | r}}</label>
+									<input id="credentials-email" class="form-control" type="email" ng-model="credentials.Email" placeholder="{{'Email' | r}}" />
 								</div>
 							</div>
 							<btn class="uk-button" ng-show="showEmailHelp" ng-click="showEmailHelp = !showEmailHelp; buttonText = 'Logon'">
@@ -50,16 +50,16 @@
 						<div>
 							<div class="view-form-icon" ng-show="PasswordSecurityException">
 								<div>
-									<label ng-show="credentials.CurrentPassword">Current {{'Password' | r}}</label>
-									<input class="form-control" name="current_password" type="password" ng-model="credentials.CurrentPassword" placeholder="Current {{'Password' | r}}" />
+									<label ng-show="credentials.CurrentPassword" for="exception-current-password">Current {{'Password' | r}}</label>
+									<input id="exception-current-password" class="form-control" name="current_password" type="password" ng-model="credentials.CurrentPassword" placeholder="Current {{'Password' | r}}" />
 								</div>
 								<div>
-									<label ng-show="credentials.NewPassword">New {{'Password' | r}}</label>
-									<input class="form-control" name="new_password" type="password" ng-model="credentials.NewPassword" placeholder="New {{'Password' | r}}" />
+									<label ng-show="credentials.NewPassword" for="exception-new-password">New {{'Password' | r}}</label>
+									<input id="exception-new-password" class="form-control" name="new_password" type="password" ng-model="credentials.NewPassword" placeholder="New {{'Password' | r}}" />
 								</div>
 								<div>
-									<label ng-show="credentials.ConfirmPassword">Confirm {{'Password' | r}}</label>
-									<input class="form-control" name="confirm_password" type="password" ng-model="credentials.ConfirmPassword"  placeholder="Confirm {{'Password' | r}}" ng-match="credentials.NewPassword" />
+									<label ng-show="credentials.ConfirmPassword" for="exception-confirm-password">Confirm {{'Password' | r}}</label>
+									<input id="exception-confirm-password" class="form-control" name="confirm_password" type="password" ng-model="credentials.ConfirmPassword"  placeholder="Confirm {{'Password' | r}}" ng-match="credentials.NewPassword" />
 									<inlineerror ng-show="login_form.confirm_password.$error.match" title="{{'Password' | r}} do not match!" />
 								</div>
 							</div>
@@ -68,12 +68,12 @@
 						<div>
 							<div class="view-form-icon" ng-show="PasswordReset">
 								<div>
-									<label ng-show="credentials.NewPassword">New {{'Password' | r}}</label>
-									<input class="form-control" ng-required="PasswordReset" name="new_password" type="password" ng-model="credentials.NewPassword" placeholder="New {{'Password' | r}}" />
+									<label ng-show="credentials.NewPassword" for="reset-new-password">New {{'Password' | r}}</label>
+									<input id="reset-new-password" class="form-control" ng-required="PasswordReset" name="new_password" type="password" ng-model="credentials.NewPassword" placeholder="New {{'Password' | r}}" />
 								</div>
 								<div>
-									<label ng-show="credentials.ConfirmPassword">Confirm {{'Password' | r}}</label>
-									<input class="form-control" ng-required="PasswordReset" name="confirm_password" type="password" ng-model="credentials.ConfirmPassword"  placeholder="Confirm {{'Password' | r}}" ng-match="credentials.NewPassword" />
+									<label ng-show="credentials.ConfirmPassword" for="reset-confirm-password">Confirm {{'Password' | r}}</label>
+									<input id="reset-confirm-password" class="form-control" ng-required="PasswordReset" name="confirm_password" type="password" ng-model="credentials.ConfirmPassword"  placeholder="Confirm {{'Password' | r}}" ng-match="credentials.NewPassword" />
 									<inlineerror ng-show="login_form.confirm_password.$error.match" title="{{'Password' | r}} do not match!" />
 								</div>
 							</div>

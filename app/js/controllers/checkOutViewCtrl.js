@@ -13,50 +13,38 @@ four51.app.controller('CheckOutViewCtrl', [
 	'GoogleAnalytics',
 	function ($scope, $routeParams, $location, $filter, $rootScope, $451, User, Order, OrderConfig, FavoriteOrder, AddressList, GoogleAnalytics) {
 		$scope.errorSection = 'open';
-		console.log('checkoutViewCtrl.js');
-		$scope.isEditforApproval = $routeParams.id !== null && $scope.user.Permissions.contains('EditApprovalOrder');
-		if ($scope.isEditforApproval) {
-			Order.get($routeParams.id, function (order) {
-				$scope.currentOrder = order;
-			});
-		}
 
 		if (!$scope.currentOrder) {
 			$location.path('catalog');
 		}
 
+		$scope.orderShipAddress = null;
+		$scope.shipAddress = null;
+		$scope.shipAddressCount = null;
+		$scope.showNewAddress = false;
+		$scope.showAddressButtons = false;
+		$scope.showOrderConfirmationButtons = false;
+		$scope.showResult = false;
+		$scope.shipaddressform = false;
+		$scope.editingAddress = false;
+
+		console.log('CheckOutViewCtrl.js');
+		console.log($scope);
+
 		$scope.hasOrderConfig = OrderConfig.hasConfig($scope.currentOrder, $scope.user);
 		$scope.checkOutSection = $scope.hasOrderConfig ? 'order' : 'shipping';
 
-		// // Check that the Purchase Order custom order field exists
-		// if (typeof $scope.currentOrder.OrderFields[0] !== 'undefined') {
-		// 	// Make sure that the cost centers include entries for 'Cost Centre' and 'Purchase Order'
-		// 	if (
-		// 		$scope.user.CostCenters.some((costCentre) => costCentre.Description === 'Cost Centre') &&
-		// 		$scope.user.CostCenters.some((costCentre) => costCentre.Description === 'Purchase Order')
-		// 	) {
-		// 		//---
-		// 		if ($scope.user.CostCenters[0].Description === 'Cost Centre') {
-		// 			$scope.currentOrder.CostCenter = $scope.user.CostCenters[0].Name;
-		// 			$scope.currentOrder.OrderFields[0].Value = $scope.user.CostCenters[1].Name;
-		// 		} else {
-		// 			$scope.currentOrder.CostCenter = $scope.user.CostCenters[1].Name;
-		// 			$scope.currentOrder.OrderFields[0].Value = $scope.user.CostCenters[0].Name;
-		// 		}
-		// 	}
-		// 	// No Purchase Order field, no Cost
-		// }
-
 		function submitOrder() {
-			$scope.displayLoadingIndicator = true;
+			$scope.displayLoadingIndicator = false;
 			$scope.submitClicked = true;
 			$scope.errorMessage = null;
+			$scope.currentOrder.ShipAddress = $scope.shipAddressObject;
+
+			saveToGroupAddressBook($scope.shipAddressObject);
+
 			Order.submit(
 				$scope.currentOrder,
 				function (data) {
-					if ($scope.user.Company.GoogleAnalyticsCode) {
-						GoogleAnalytics.ecommerce(data, $scope.user);
-					}
 					$scope.user.CurrentOrderID = null;
 					User.save($scope.user, function (data) {
 						$scope.user = data;
@@ -75,12 +63,50 @@ four51.app.controller('CheckOutViewCtrl', [
 			);
 		}
 
+		function saveToGroupAddressBook(addressObj) {
+			const companyInteropID = $rootScope.$$childHead.tree[0];
+			const addressJson = JSON.stringify({
+				Addresses: [
+					{
+						AddressProperties: {
+							InteropID: 'ADDR-' + addressObj.PatientID,
+							CompanyInteropID: 'ALPHA_IBDOC',
+							AddressName: addressObj.PatientID,
+							FirstName: addressObj.FirstName,
+							LastName: addressObj.LastName,
+							CompanyName: addressObj.CompanyName,
+							AddressLine1: addressObj.Street1,
+							AddressLine2: addressObj.Street2,
+							City: addressObj.City,
+							State: addressObj.State,
+							Zip: addressObj.Zip,
+							Country: 'GB',
+							Phone: '',
+						},
+					},
+				],
+			});
+
+			const url = 'https://egqmyi45zp7j2evykymvbrefz40jrunq.lambda-url.eu-west-2.on.aws/';
+			const xhr = new XMLHttpRequest();
+			xhr.open('POST', url, true);
+			xhr.setRequestHeader('content-type', 'application/json');
+			xhr.send(addressJson);
+
+			xhr.onreadystatechange = () => {
+				// Call a function when the state changes.
+				if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+					// Request finished. Do processing here.
+				}
+			};
+		}
+
 		$scope.$watch('currentOrder.CostCenter', function () {
 			OrderConfig.address($scope.currentOrder, $scope.user);
 		});
 
 		function saveChanges(callback) {
-			$scope.displayLoadingIndicator = true;
+			$scope.displayLoadingIndicator = false;
 			$scope.errorMessage = null;
 			$scope.actionMessage = null;
 			var auto = $scope.currentOrder.autoID;
@@ -106,6 +132,18 @@ four51.app.controller('CheckOutViewCtrl', [
 			);
 		}
 
+		function editAddress() {
+			$scope.editingAddress = true;
+			$scope.shipAddressObject.IsEditing = true;
+			UIkit.modal(document.getElementById('address-modal')).show();
+		}
+
+		function confirmAddress() {
+			console.log('confirmAddress()');
+			$scope.showAddressButtons = false;
+			$scope.showOrderConfirmationButtons = true;
+		}
+
 		$scope.continueShopping = function () {
 			if (confirm('Do you want to save changes to your order before continuing?') === true)
 				saveChanges(function () {
@@ -116,7 +154,7 @@ four51.app.controller('CheckOutViewCtrl', [
 
 		$scope.cancelOrder = function () {
 			if (confirm('Are you sure you wish to cancel your order?') === true) {
-				$scope.displayLoadingIndicator = true;
+				$scope.displayLoadingIndicator = false;
 				Order.delete(
 					$scope.currentOrder,
 					function () {
@@ -136,16 +174,20 @@ four51.app.controller('CheckOutViewCtrl', [
 			}
 		};
 
+		$scope.editAddress = function () {
+			editAddress();
+		};
+
+		$scope.confirmAddress = function () {
+			confirmAddress();
+		};
+
 		$scope.saveChanges = function () {
 			saveChanges();
 		};
 
 		$scope.submitOrder = function () {
 			submitOrder();
-		};
-
-		$scope.saveFavorite = function () {
-			FavoriteOrder.save($scope.currentOrder);
 		};
 
 		$scope.cancelEdit = function () {

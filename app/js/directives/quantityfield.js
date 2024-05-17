@@ -11,10 +11,10 @@ four51.app.directive('quantityfield', [
 			restrict: 'E',
 			template:
 				'<div>' +
-				'<div ng-if="!lineitem.PriceSchedule.RestrictedQuantity">' +
-				'<input class="uk-input" ng-disabled="lineitem.Variant.RecordCount > 0 && lineitem.ID" id="451qa_input_qty" placeholder="{{lineitem.Product.UnitOfMeasure}}" autocomplete="off" ng-change="qtyChanged(lineitem)" ng-if="!lineitem.PriceSchedule.RestrictedQuantity" type="text" ng-required="required" name="qtyInput" ng-model="lineitem.Quantity" ui-validate="\'validQuantityAddToOrder($value, lineitem)\'"/>' +
+				'<div ng-if="!lineitem.PriceSchedule.RestrictedQuantity" class="uk-form-width-medium">' +
+				'<input class="uk-input" ng-init="1" ng-disabled="lineitem.Variant.RecordCount > 0 && lineitem.ID" id="451qa_input_qty" placeholder="{{lineitem.Product.UnitOfMeasure}}" autocomplete="off" ng-change="qtyChanged(lineitem)" ng-if="!lineitem.PriceSchedule.RestrictedQuantity" type="text" ng-required="required" name="qtyInput" ng-model="lineitem.Quantity" ui-validate="\'validQuantityAddToOrder($value, lineitem)\'"/>' +
 				'</div>' +
-				'<div ng-if="lineitem.PriceSchedule.RestrictedQuantity">' +
+				'<div ng-if="lineitem.PriceSchedule.RestrictedQuantity" class="uk-form-width-medium">' +
 				'<select id="451qa_input_qty" class="uk-select uk-form-width-small" ng-change="qtyChanged(lineitem)" ng-if="lineitem.PriceSchedule.RestrictedQuantity" ng-required="required" ng-model="lineitem.Quantity" ng-options="pb.Quantity as getRestrictedQtyText(pb, lineitem.Product.QuantityMultiplier) for pb in lineitem.PriceSchedule.PriceBreaks" ui-validate="\'validQuantityAddToOrder($value, lineitem)\'"><option value=""></option></select>' +
 				'</div>' +
 				'<inlineerror ng-show="lineitem.qtyError" title="{{lineitem.qtyError}}" class="uk-text-small uk-text-danger uk-margin-remove uk-text-nowrap"/>' +

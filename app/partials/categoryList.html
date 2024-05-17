@@ -3,18 +3,16 @@
 <!-- section start -->
 <!-- ================ -->
 
-<loadingindicator ng-show="categoryLoadingIndicator" title="{{'Please wait while we fetch all categories' | r | xlat}}" />
-
 <div class="uk-container">
 	<div uk-height-match="row: false;" class="uk-grid uk-grid-medium uk-flex-center uk-child-width-1-2@s uk-child-width-1-3@m uk-child-width-1-4@l">
-		<div class="uk-card" ng-repeat="c in currentCategory.SubCategories" ng-show="c.Image.URL">
-			<div class="uk-background-accent">
-				<a ng-href="catalog/{{c.InteropID}}">
-					<figure>
-						<img class="" ng-src="{{c.Image.URL}}"/>
-					</figure>
-				</a>
-			</div>
+		<div class="uk-card" ng-repeat="c in currentCategory.SubCategories">
+            <div class="uk-background-accent">
+			    <a ng-href="https://latcham.four51ordercloud.com/ibdoc/product/A707AAD2-9121-436E-BD6A-551C1B713C77">
+			    	<figure>
+			    		<img ng-src="{{c.Image.URL}}"/>
+			    	</figure>
+			    </a>
+    		</div>
 		</div>
 	</div>
 </div>
