@@ -64,7 +64,7 @@ four51.app.controller('CheckOutViewCtrl', [
 		}
 
 		function saveToGroupAddressBook(addressObj) {
-			const companyInteropID = $rootScope.$$childHead.user.CustomFields[0].DefaultValue;
+			const companyInteropID = $rootScope.$$childHead.user.CustomFields[0].Value;
 			const addressJson = JSON.stringify({
 				GroupInteropID: 'MAIN-GROUP',
 				Addresses: [
